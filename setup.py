@@ -13,14 +13,14 @@ except ImportError:
 from setuptools import find_packages
 
 setup(
-    name="olab",
+    name="mdv",
     version="0.0.1",
-    description="a minimal example package (with pybind11)",
-    author="Henry Schreiner",
+    description="Multi-dimensional-array class based on std::vector (with pybind11)",
+    author="Olivier Masset",
     license="MIT",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
-    cmake_install_dir="src/olab",
+    cmake_install_dir="src/mdv",
     include_package_data=True,
     extras_require={"test": ["pytest"]},
     python_requires=">=3.6",
