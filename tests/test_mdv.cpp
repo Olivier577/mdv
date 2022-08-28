@@ -31,20 +31,16 @@ TEST_CASE("Test resize", "[resize]")
     a1.resize(std::array<size_t, 3>{1, 3, 4});
 }
 
-TEST_CASE("Test get_coeff", "[get_coeff]")
+TEST_CASE("Test get_id", "[get_id]")
 {
-    MDV<double, 3, 0> a1 (std::array<size_t, 3>{2, 3, 4},
-                      std::vector<double>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-                                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23});
-    auto x = a1.get_coeff(2);
-    std::cout << x << std::endl;
+    MDV<double, 2, 0> a1 (std::array<size_t, 2>{2, 3},
+                      std::vector<double>{0, 1, 2, 3, 4, 5});
+
+    MDV<double, 2, 1> a2 (std::array<size_t, 2>{2, 3},
+                      std::vector<double>{0, 1, 2, 3, 4, 5});
+
+    std::cout << a1.get_id(std::array<size_t, 2>{1, 1}) << std::endl;
+
+    std::cout << a2.get_id(std::array<size_t, 2>{1, 1}) << std::endl;
 }
 
-TEST_CASE("Test get_coeff1", "[get_coeff1]")
-{
-    MDV<double, 3, 0> a1 (std::array<size_t, 3>{2, 3, 4},
-                      std::vector<double>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-                                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23});
-    auto x = a1.get_coeff1(0);
-    std::cout << x << std::endl;
-}

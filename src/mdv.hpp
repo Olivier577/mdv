@@ -3,8 +3,8 @@
 #include <ctgmath>
 #include <array>
 #include <vector>
-#include <numeric>   // std::accumulate()
-#include <algorithm> // std::equal()
+#include <numeric>    // std::accumulate()
+#include <algorithm>  // std::equal()
 #include <functional> // std::multiplies()
 #include <cassert>
 #include <iostream>
@@ -24,9 +24,8 @@ public:
     MDV(std::array<size_t, D> &&shape);
     MDV(std::array<size_t, D> &&shape, std::vector<T> &&data);
     MDV(std::array<size_t, D> &&shape, const std::vector<T> &data);
-    
-    MDV(const MDV<T, D, L> &input);
 
+    MDV(const MDV<T, D, L> &input);
 
     // Destructor
     ~MDV();
@@ -85,14 +84,11 @@ public:
     // Element access methods
     size_t get_coeff(size_t i);
     size_t get_coeff1(size_t i);
-    size_t get_id(const std::array<T, D> coords);
+    size_t get_id(std::array<size_t, D> &&coords);
     std::array<size_t, D> get_coords(const size_t &index);
     auto traverse_indices();
     bool close_enough(const T &a, const T &b, T m_tol);
-
-
 };
-
 
 ////////////////////CONSTRUCTOR / DESTRUCTOR FUNCTIONS///////////////////////////////////////////////
 
@@ -113,7 +109,7 @@ MDV<T, D, L>::MDV(std::array<size_t, D> &&shape)
 {
     static_assert(L == 0 || L == 1);
     m_size = std::accumulate(m_shape.begin(), m_shape.end(),
-                        1, std::multiplies<size_t>());
+                             1, std::multiplies<size_t>());
     m_data = std::vector<T>(m_size, 0);
 }
 
@@ -148,7 +144,7 @@ void MDV<T, D, L>::resize(std::array<size_t, D> &&shape)
 {
     m_shape = shape;
     m_size = std::accumulate(m_shape.begin(), m_shape.end(),
-                        1, std::multiplies<size_t>());
+                             1, std::multiplies<size_t>());
     m_data.resize(m_size);
 }
 
@@ -262,7 +258,7 @@ size_t MDV<T, D, L>::get_coeff(size_t i)
     size_t p = 1;
     while (i < D - 1)
     {
-        p *= m_shape[1 + i++];
+        p *= m_shape[++i];
     }
     return p;
 }
@@ -274,26 +270,21 @@ size_t MDV<T, D, L>::get_coeff1(size_t i)
     size_t p = 1;
     while (i > 0)
     {
-        p *= m_shape[i--];
+        p *= m_shape[--i];
     }
     return p;
 }
 
-/*
-
 // Map coordinates to vector index
 template <class T, size_t D, size_t L>
-size_t MDV<T, D, L>::get_id(const std::array<T, D> coords)
+size_t MDV<T, D, L>::get_id(std::array<size_t, D> &&coords)
 {
     // no better solution at the time
-    if constexpr (L = 0)
+    auto c = [&](const size_t &a)
     {
-        c = get_coeff;
-    }
-    else
-    {
-        c = get_coeff1;
-    }
+        return (L == 0) ? get_coeff(a) : get_coeff1(a);
+    };
+
     size_t id = 0;
     for (size_t i = 0; i < D; ++i)
     {
@@ -301,6 +292,8 @@ size_t MDV<T, D, L>::get_id(const std::array<T, D> coords)
     }
     return id;
 }
+
+/*
 
 
 // Map index to coordinates in function of shape
