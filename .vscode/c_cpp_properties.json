@@ -5,9 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${HOME}/.local/include/**",
-                "/usr/include/python3.9/**",
-                "/usr/include/eigen3/**",
-                "/usr/include/Spectra/**"
+                "/usr/include/python3.9/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",

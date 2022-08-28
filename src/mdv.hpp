@@ -5,24 +5,36 @@
 #include <vector>
 #include <numeric>   // std::accumulate()
 #include <algorithm> // std::equal()
+#include <functional> // std::multiplies()
 #include <cassert>
 #include <iostream>
 
 template <typename T, size_t D, size_t L = 1>
 class MDV
 {
+
+    std::array<size_t, D> m_shape;
+    std::vector<T> m_data;
+    size_t m_size;
+    T m_tol = 1e-9;
+
 public:
     // Constructors
     MDV();
-    MDV(std::array<size_t, D> shape);
-    MDV(std::array<size_t, D> shape, std::vector<T> &data);
+    MDV(std::array<size_t, D> &&shape);
+    MDV(std::array<size_t, D> &&shape, std::vector<T> &&data);
+    MDV(std::array<size_t, D> &&shape, const std::vector<T> &data);
+    
     MDV(const MDV<T, D, L> &input);
+
 
     // Destructor
     ~MDV();
 
     // Configuration methods.
-    void resize(std::array<size_t, D> shape);
+    void resize(std::array<size_t, D> &&shape);
+
+    /*
 
     // Element access methods
     T get(std::array<size_t, D> coords) const;
@@ -67,13 +79,9 @@ public:
     template <class U>
     friend MDV<U> operator/(const MDV<U> &lhs, const U &rhs);
 
-private:
-    std::array<size_t, D> m_shape;
-    std::vector<T> m_data;
-    size_t m_size;
-    T m_tol = 1e-9;
+*/
 
-private:
+public:
     // Element access methods
     size_t get_coeff(size_t i);
     size_t get_coeff1(size_t i);
@@ -81,11 +89,13 @@ private:
     std::array<size_t, D> get_coords(const size_t &index);
     auto traverse_indices();
     bool close_enough(const T &a, const T &b, T m_tol);
+
+
 };
 
-/* **************************************************************************************************
-CONSTRUCTOR / DESTRUCTOR FUNCTIONS
-/* *************************************************************************************************/
+
+////////////////////CONSTRUCTOR / DESTRUCTOR FUNCTIONS///////////////////////////////////////////////
+
 // The default constructor.
 template <class T, size_t D, size_t L>
 MDV<T, D, L>::MDV()
@@ -95,23 +105,29 @@ MDV<T, D, L>::MDV()
     m_size = 0;
     m_data = {};
 }
-/*
-
 
 // Construct empty matrix (all elements 0)
 template <class T, size_t D, size_t L>
-MDV<T, D, L>::MDV(std::array<size_t, D> shape)
+MDV<T, D, L>::MDV(std::array<size_t, D> &&shape)
     : m_shape(shape)
 {
     static_assert(L == 0 || L == 1);
-    m_size = accumulate(m_shape.begin(), m_shape.end(),
-                        1, multiplies<size_t>());
+    m_size = std::accumulate(m_shape.begin(), m_shape.end(),
+                        1, std::multiplies<size_t>());
     m_data = std::vector<T>(m_size, 0);
+}
+
+// Construct with std::vector.
+template <class T, size_t D, size_t L>
+MDV<T, D, L>::MDV(std::array<size_t, D> &&shape, std::vector<T> &&data)
+    : m_shape(shape), m_data(data), m_size(data.size())
+{
+    static_assert(L == 0 || L == 1);
 }
 
 // Construct from std::vector.
 template <class T, size_t D, size_t L>
-MDV<T, D, L>::MDV(std::array<size_t, D> shape, std::vector<T> &data)
+MDV<T, D, L>::MDV(std::array<size_t, D> &&shape, const std::vector<T> &data)
     : m_shape(shape), m_data(data), m_size(data.size())
 {
     static_assert(L == 0 || L == 1);
@@ -128,58 +144,19 @@ MDV<T, D, L>::~MDV() {}
 
 // Configuration methods.
 template <class T, size_t D, size_t L>
-void MDV<T, D, L>::resize(std::array<size_t, D> shape)
+void MDV<T, D, L>::resize(std::array<size_t, D> &&shape)
 {
     m_shape = shape;
-    m_size = accumulate(m_shape.begin(), m_shape.end(),
-                        1, multiplies<size_t>());
+    m_size = std::accumulate(m_shape.begin(), m_shape.end(),
+                        1, std::multiplies<size_t>());
     m_data.resize(m_size);
 }
 
 // Element functions
 // Get coefficients to map coordinates to index (Layout=0)
 // Not possible to overload function with template parameter?
-template <class T, size_t D, size_t L>
-size_t MDV<T, D, L>::get_coeff(size_t i)
-{
-    if (i == D - 1)
-    {
-        return 1;
-    }
-    return m_shape[i + 1] * get_coeff(i + 1);
-}
-// Get coefficients to map coordinates to index (Layout=1)
-template <class T, size_t D, size_t L>
-size_t MDV<T, D, L>::get_coeff1(size_t i)
-{
-    if (i == 0)
-    {
-        return 1;
-    }
-    return m_shape[i - 1] * get_coeff(i - 1);
-}
 
-// Map coordinates to vector index
-template <class T, size_t D, size_t L>
-size_t MDV<T, D, L>::get_id(const std::array<T, D> coords)
-{
-    // no better solution at the time
-    if constexpr (L = 0)
-    {
-        c = get_coeff;
-    }
-    else
-    {
-        c = get_coeff1;
-    }
-    size_t id = 0;
-    for (size_t i = 0; i < D; ++i)
-    {
-        id += coords[i] * c(i);
-    }
-    return id;
-}
-
+/*
 // Get value at given coordinates
 template <class T, size_t D, size_t L>
 T MDV<T, D, L>::get(std::array<size_t, D> coords) const
@@ -274,7 +251,57 @@ bool MDV<T, D, L>::operator==(const MDV<T, D, L> &rhs, T tol = m_tol)
 }
 
 
+*/
+
 ///////////PRIVATE FUNCTIONS/////////////////////////////////////////////////////////////////////////
+
+// Get coefficients to map coordinates to index (Layout=0)
+template <class T, size_t D, size_t L>
+size_t MDV<T, D, L>::get_coeff(size_t i)
+{
+    size_t p = 1;
+    while (i < D - 1)
+    {
+        p *= m_shape[1 + i++];
+    }
+    return p;
+}
+
+// Get coefficients to map coordinates to index (Layout=1)
+template <class T, size_t D, size_t L>
+size_t MDV<T, D, L>::get_coeff1(size_t i)
+{
+    size_t p = 1;
+    while (i > 0)
+    {
+        p *= m_shape[i--];
+    }
+    return p;
+}
+
+/*
+
+// Map coordinates to vector index
+template <class T, size_t D, size_t L>
+size_t MDV<T, D, L>::get_id(const std::array<T, D> coords)
+{
+    // no better solution at the time
+    if constexpr (L = 0)
+    {
+        c = get_coeff;
+    }
+    else
+    {
+        c = get_coeff1;
+    }
+    size_t id = 0;
+    for (size_t i = 0; i < D; ++i)
+    {
+        id += coords[i] * c(i);
+    }
+    return id;
+}
+
 
 // Map index to coordinates in function of shape
 template <class T, size_t D, size_t L>

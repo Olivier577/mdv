@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15...3.22)
 
-project(olab VERSION "0.0.1")
+project(mdv VERSION "0.0.1")
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -27,9 +27,7 @@ include_directories("src")
 
 # Now we can find pybind11
 find_package(pybind11 CONFIG REQUIRED)
-
 pybind11_add_module(_core MODULE src/main.cpp)
-
 target_compile_definitions(_core PRIVATE VERSION_INFO=${PROJECT_VERSION})
 
 
@@ -62,7 +60,7 @@ endif()
 
 # Catch2
 add_subdirectory(lib/Catch2)
-add_executable(cpp_tests tests/test.cpp tests/test_mdv.cpp tests/test_qr.cpp)
+add_executable(cpp_tests tests/test_mdv.cpp)
 target_link_libraries(cpp_tests PRIVATE Catch2::Catch2WithMain)
 include(CTest)
 include(Catch)
