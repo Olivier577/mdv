@@ -23,7 +23,6 @@ public:
     MDV();
     MDV(std::array<size_t, D> &&shape);
     MDV(std::array<size_t, D> &&shape, std::vector<T> &&data);
-    MDV(std::array<size_t, D> &&shape, const std::vector<T> &data);
 
     MDV(const MDV<T, D, L> &input);
 
@@ -32,12 +31,13 @@ public:
 
     // Configuration methods.
     void resize(std::array<size_t, D> &&shape);
-
-    /*
+    void reshape(std::array<size_t, D> &&shape);
 
     // Element access methods
-    T get(std::array<size_t, D> coords) const;
-    void set(std::array<size_t, D> coords, T val);
+    T get(std::array<size_t, D> &&coords);
+    void set(std::array<size_t, D> &&coords, T val);
+
+    /*
 
     // Member access methods
     std::array<T, D> get_shape() const;
@@ -84,7 +84,7 @@ public:
     // Element access methods
     size_t get_coeff(size_t i);
     size_t get_coeff1(size_t i);
-    size_t get_id(std::array<size_t, D> &&coords);
+    size_t get_id(std::array<size_t, D> coords);
     std::array<size_t, D> get_coords(const size_t &index);
     auto traverse_indices();
     bool close_enough(const T &a, const T &b, T m_tol);
@@ -121,14 +121,6 @@ MDV<T, D, L>::MDV(std::array<size_t, D> &&shape, std::vector<T> &&data)
     static_assert(L == 0 || L == 1);
 }
 
-// Construct from std::vector.
-template <class T, size_t D, size_t L>
-MDV<T, D, L>::MDV(std::array<size_t, D> &&shape, const std::vector<T> &data)
-    : m_shape(shape), m_data(data), m_size(data.size())
-{
-    static_assert(L == 0 || L == 1);
-}
-
 // The copy constructor.
 template <class T, size_t D, size_t L>
 MDV<T, D, L>::MDV(const MDV<T, D, L> &input)
@@ -149,24 +141,23 @@ void MDV<T, D, L>::resize(std::array<size_t, D> &&shape)
 }
 
 // Element functions
-// Get coefficients to map coordinates to index (Layout=0)
-// Not possible to overload function with template parameter?
 
-/*
 // Get value at given coordinates
 template <class T, size_t D, size_t L>
-T MDV<T, D, L>::get(std::array<size_t, D> coords) const
+T MDV<T, D, L>::get(std::array<size_t, D> &&coords)
 {
     return m_data[get_id(coords)];
 }
 
 // Set value at given coordinates
 template <class T, size_t D, size_t L>
-void MDV<T, D, L>::set(std::array<size_t, D> coords, T val)
+void MDV<T, D, L>::set(std::array<size_t, D> &&coords, T val)
 {
     size_t ndx = get_id(coords);
     m_data[get_id(coords)] = val;
 }
+
+/*
 
 // Return the shape of the MDV object
 template <class T, size_t D, size_t L>
@@ -277,7 +268,7 @@ size_t MDV<T, D, L>::get_coeff1(size_t i)
 
 // Map coordinates to vector index
 template <class T, size_t D, size_t L>
-size_t MDV<T, D, L>::get_id(std::array<size_t, D> &&coords)
+size_t MDV<T, D, L>::get_id(std::array<size_t, D> coords)
 {
     // no better solution at the time
     auto c = [&](const size_t &a)
