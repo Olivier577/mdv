@@ -25,19 +25,19 @@ TEST_CASE("Test constructors", "[MDV(...)]")
 
 TEST_CASE("Test resize", "[resize]")
 {
-    MDV<double, 3, 0> a1 (std::array<size_t, 3>{2, 3, 4},
-                      std::vector<double>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-                                          13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23});
+    MDV<double, 3, 0> a1(std::array<size_t, 3>{2, 3, 4},
+                         std::vector<double>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                                             13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23});
     a1.resize(std::array<size_t, 3>{1, 3, 4});
 }
 
 TEST_CASE("Test get_id", "[get_id]")
 {
-    MDV<double, 2, 0> a1 (std::array<size_t, 2>{2, 3},
-                      std::vector<double>{0, 1, 2, 3, 4, 5});
+    MDV<double, 2, 0> a1(std::array<size_t, 2>{2, 3},
+                         std::vector<double>{0, 1, 2, 3, 4, 5});
 
-    MDV<double, 2, 1> a2 (std::array<size_t, 2>{2, 3},
-                      std::vector<double>{0, 1, 2, 3, 4, 5});
+    MDV<double, 2, 1> a2(std::array<size_t, 2>{2, 3},
+                         std::vector<double>{0, 1, 2, 3, 4, 5});
 
     std::cout << a1.get_id(std::array<size_t, 2>{1, 1}) << std::endl;
 
@@ -46,10 +46,48 @@ TEST_CASE("Test get_id", "[get_id]")
 
 TEST_CASE("Test get & set", "[get & set]")
 {
-    MDV<double, 2, 0> a1 (std::array<size_t, 2>{2, 3},
-                      std::vector<double>{0, 1, 2, 3, 4, 5});
+    MDV<double, 2, 0> a1(std::array<size_t, 2>{2, 3},
+                         std::vector<double>{0, 1, 2, 3, 4, 5});
 
     a1.set(std::array<size_t, 2>{1, 2}, -9);
     std::cout << a1.get(std::array<size_t, 2>{1, 2}) << std::endl;
 }
 
+TEST_CASE("Test get_coords", "[get_coords]")
+{
+    MDV<double, 3, 0> a1(std::array<size_t, 3>{2, 3, 4},
+                         std::vector<double>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                                             12, 13, 14, 15, 16, 17, 18, 19});
+
+    for (auto e : a1.get_coords(17))
+    {
+        std::cout << e << " ";
+    }
+    std::cout << std::endl;
+}
+
+TEST_CASE("Test traverse_right", "[traverse_right]")
+{
+    MDV<double, 3, 0> a1(std::array<size_t, 3>{2, 3, 4},
+                         std::vector<double>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                                             12, 13, 14, 15, 16, 17, 18, 19});
+                    
+    a1.traverse_right([](const std::array<size_t, 3> &coords) {
+        for (auto e : coords) { std::cout << e << " "; };
+        std::cout << std::endl;
+    });
+    std::cout << std::endl;
+}
+
+TEST_CASE("Test traverse_left", "[traverse_left]")
+{
+    MDV<double, 3, 1> a1(std::array<size_t, 3>{2, 3, 4},
+                         std::vector<double>{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                                             12, 13, 14, 15, 16, 17, 18, 19});
+
+    a1.traverse_left([](const std::array<size_t, 3> &coords) {
+        for (auto e : coords) { std::cout << e << " "; };
+        std::cout << std::endl;
+    });
+    std::cout << std::endl;
+}

@@ -118,8 +118,8 @@ shape=(2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2)
-shape = tuple(np.arange(2, 21))
+shape = (3, 4)
 print(shape)
-res = i2xyz2(index=2432902008176640000-1, shape=shape)
+res = i2xyz2(index=5, shape=shape)
 
 print(f"{res=}")

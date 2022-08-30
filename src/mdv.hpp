@@ -37,8 +37,6 @@ public:
     T get(std::array<size_t, D> &&coords);
     void set(std::array<size_t, D> &&coords, T val);
 
-    /*
-
     // Member access methods
     std::array<T, D> get_shape() const;
     std::array<T, D> get_size() const;
@@ -48,35 +46,37 @@ public:
     size_t get_dim() const;
     size_t get_layout() const;
 
-    // Overload == operator
-    bool compare(const MDV<T, D, L> &other, T tol);
-    bool operator==(const MDV<T, D, L> &rhs, T tol = m_tol);
+    /*
 
-    // Overload + - * / operators
-    template <class U>
-    friend MDV<U> operator+(const MDV<U> &lhs, const MDV<U> &rhs);
-    template <class U>
-    friend MDV<U> operator+(const U &lhs, const MDV<U> &rhs);
-    template <class U>
-    friend MDV<U> operator+(const MDV<U> &lhs, const U &rhs);
-    template <class U>
-    friend MDV<U> operator-(const MDV<U> &lhs, const MDV<U> &rhs);
-    template <class U>
-    friend MDV<U> operator-(const U &lhs, const MDV<U> &rhs);
-    template <class U>
-    friend MDV<U> operator-(const MDV<U> &lhs, const U &rhs);
-    template <class U>
-    friend MDV<U> operator*(const MDV<U> &lhs, const MDV<U> &rhs);
-    template <class U>
-    friend MDV<U> operator*(const U &lhs, const MDV<U> &rhs);
-    template <class U>
-    friend MDV<U> operator*(const MDV<U> &lhs, const U &rhs);
-    template <class U>
-    friend MDV<U> operator/(const MDV<U> &lhs, const MDV<U> &rhs);
-    template <class U>
-    friend MDV<U> operator/(const U &lhs, const MDV<U> &rhs);
-    template <class U>
-    friend MDV<U> operator/(const MDV<U> &lhs, const U &rhs);
+// Overload == operator
+bool compare(const MDV<T, D, L> &other, T tol);
+bool operator==(const MDV<T, D, L> &rhs, T tol = m_tol);
+
+// Overload + - * / operators
+template <class U>
+friend MDV<U> operator+(const MDV<U> &lhs, const MDV<U> &rhs);
+template <class U>
+friend MDV<U> operator+(const U &lhs, const MDV<U> &rhs);
+template <class U>
+friend MDV<U> operator+(const MDV<U> &lhs, const U &rhs);
+template <class U>
+friend MDV<U> operator-(const MDV<U> &lhs, const MDV<U> &rhs);
+template <class U>
+friend MDV<U> operator-(const U &lhs, const MDV<U> &rhs);
+template <class U>
+friend MDV<U> operator-(const MDV<U> &lhs, const U &rhs);
+template <class U>
+friend MDV<U> operator*(const MDV<U> &lhs, const MDV<U> &rhs);
+template <class U>
+friend MDV<U> operator*(const U &lhs, const MDV<U> &rhs);
+template <class U>
+friend MDV<U> operator*(const MDV<U> &lhs, const U &rhs);
+template <class U>
+friend MDV<U> operator/(const MDV<U> &lhs, const MDV<U> &rhs);
+template <class U>
+friend MDV<U> operator/(const U &lhs, const MDV<U> &rhs);
+template <class U>
+friend MDV<U> operator/(const MDV<U> &lhs, const U &rhs);
 
 */
 
@@ -85,8 +85,12 @@ public:
     size_t get_coeff(size_t i);
     size_t get_coeff1(size_t i);
     size_t get_id(std::array<size_t, D> coords);
-    std::array<size_t, D> get_coords(const size_t &index);
-    auto traverse_indices();
+    std::array<size_t, D> get_coords(size_t index);
+    void traverse_right();
+    template <class Callable>
+    void traverse_right(Callable c);
+    template <class Callable>
+    void traverse_left(Callable c);
     bool close_enough(const T &a, const T &b, T m_tol);
 };
 
@@ -157,8 +161,6 @@ void MDV<T, D, L>::set(std::array<size_t, D> &&coords, T val)
     m_data[get_id(coords)] = val;
 }
 
-/*
-
 // Return the shape of the MDV object
 template <class T, size_t D, size_t L>
 std::array<T, D> MDV<T, D, L>::get_shape() const
@@ -193,6 +195,8 @@ size_t MDV<T, D, L>::get_layout() const
 {
     return L;
 }
+
+/*
 
 // Compare with another MDV object
 template <class T, size_t D, size_t L>
@@ -284,52 +288,45 @@ size_t MDV<T, D, L>::get_id(std::array<size_t, D> coords)
     return id;
 }
 
-/*
-
-
 // Map index to coordinates in function of shape
 template <class T, size_t D, size_t L>
-std::array<size_t, D> MDV<T, D, L>::get_coords(const size_t &index)
+auto MDV<T, D, L>::get_coords(size_t index) -> std::array<size_t, D>
 {
+    std::array<size_t, D> coords{0};
     size_t n = D - 1;
-    size_t product = m_size;
-    size_t incr = 1;
-    std::array<size_t, D> coords();
-
-    while (incr != 0)
+    long product = m_shape[n];
+    size_t rest = 0;
+    while (true)
     {
-        if (index - (product - 1) <= 0)
+        if ((long)index - (product - 1) <= 0)
         {
             if (n == D - 1)
             {
                 coords[n] = index;
-                incr = 0;
+                break;
             }
             else
             {
-                product /= shape[n];
+                product /= m_shape[n];
                 coords[n] = index / product;
-                size_t rest = index %= product;
+                rest = index - coords[n] * product;
                 if (rest == 0)
                 {
                     break;
                 }
-                else
-                {
-                    index = rest;
-                    incr = 1;
-                }
+                index = rest;
+                ++n;
             }
         }
         else
         {
-            product *= shape[n - 1];
-            incr = -1;
+            product *= m_shape[--n];
         }
-        n += incr;
     }
     return coords;
 }
+
+/*
 
 // template <class T, size_t D, size_t L>
 // auto MDV<T, D, L>::traverse_indices(size_t loop_level)
@@ -375,23 +372,23 @@ void traverse_right(std::array<size_t, D> &shape, std::array<size_t, D> &coords)
     }
 }
 
-template <size_t D>
-void traverse_right2(std::array<size_t, D> &shape, std::array<size_t, D> &coords)
+*/
+
+template <class T, size_t D, size_t L>
+template <class Callable>
+void MDV<T, D, L>::traverse_right(Callable c)
 {
+    std::array<size_t, D> coords{0};
     bool flag = true;
     while (flag)
     {
         for (long i = D - 1; i > -1; i--)
         {
-            if (coords[i] < shape[i] - 1)
+            if (coords[i] < m_shape[i] - 1)
             {
                 coords[i]++;
                 std::fill(coords.begin() + i + 1, coords.end(), 0);
-                for (auto e : coords)
-                {
-                    std::cout << e << " ";
-                }
-                std::cout << std::endl;
+                c(coords);
                 flag = true;
                 break;
             }
@@ -400,23 +397,21 @@ void traverse_right2(std::array<size_t, D> &shape, std::array<size_t, D> &coords
     }
 }
 
-template <size_t D>
-void traverse_left2(std::array<size_t, D> &shape, std::array<size_t, D> &coords)
+template <class T, size_t D, size_t L>
+template <class Callable>
+void MDV<T, D, L>::traverse_left(Callable c)
 {
+    std::array<size_t, D> coords{0};
     bool flag = true;
     while (flag)
     {
         for (size_t i = 0; i < D; i++)
         {
-            if (coords[i] < shape[i] - 1)
+            if (coords[i] < m_shape[i] - 1)
             {
                 coords[i]++;
                 std::fill(coords.begin(), coords.end() - (D - i), 0);
-                for (auto e : coords)
-                {
-                    std::cout << e << " ";
-                }
-                std::cout << std::endl;
+                c(coords);
                 flag = true;
                 break;
             }
@@ -425,17 +420,8 @@ void traverse_left2(std::array<size_t, D> &shape, std::array<size_t, D> &coords)
     }
 }
 
-std::array<size_t, 9> shape{3, 4, 5, 6, 7, 8, 9, 10, 11};
-std::array<size_t, 9> coords1{0, 0, 0, 0, 0, 0, 0, 0, 0};
-traverse_right2<9>(shape, coords1);
-
-std::array<size_t, 9> coords{0, 0, 0, 0, 0, 0, 0, 0, 0};
-traverse_left2<9>(shape, coords);
-
 template <class T, size_t D, size_t L>
-bool MDV<T, D, L>::close_enough(const T &a, const T &b, T m_tol)
+bool MDV<T, D, L>::close_enough(const T &a, const T &b, T tol)
 {
-    return abs(abs(a) - abs(b)) < m_tol;
+    return abs(abs(a) - abs(b)) < tol;
 }
-
-*/
